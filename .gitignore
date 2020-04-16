@@ -1,0 +1,10 @@
+.DS_Store
+.afp*
+*.sh
+__pycache__
+*.swp
+*.pyc
+*.c
+*.so
+*.html
+build
