@@ -5,14 +5,42 @@ from .file_search import file_search
 from .idlSpawn import IDLJob, IDLAsyncQueue
 
 class Structure(object):
+  '''
+  Class to act similar to an IDL structure and python dictionary.
+  Note that all attributes/keys are forced to lower case
+  '''
   def __init__(self, **kwargs):
-    for key, val in kwargs.items():
-      self[key] = val
-  def __getitem__(self, key):
-    return self.__dict__[key]
+    '''
+    Inputs:
+      none.
+    Keywords:
+      tag/value pairs to create structure
+    Returns:
+      Structure instance
+    '''
+    for key, val in kwargs.items():                                                     # Iterate over all key/value pairs in kwargs
+      self[key] = val                                                                   # Define new value
+
+  def __getitem__(self, key, default = None):
+    '''Method for getting data using obj[key] syntax'''
+    return self.__dict__.get(key.lower(), default)                                      # Get data, force key to lower case 
+
   def __setitem__(self, key, val):
-    self.__dict__[key] = val
+    '''Method for setting data using obj[key] syntax'''
+    self.__dict__[key.lower()] = val                                                    # Set value, force key to lower case
+
+  def __getattr__(self, key):
+    '''Method for getting data using obj.key syntax'''
+    return self[key]
+
+  def __setattr__(self, key, val):
+    '''Method for setting data using obj.key syntax'''
+    self[key] = val
+
   def __contains__(self, key):
-    return key in self.__dict__
+    '''Method for checking if key in structure'''
+    return key.lower() in self.__dict__
+
   def keys(self):
+    '''Method for getting all keys in structure'''
     return self.__dict__.keys()
