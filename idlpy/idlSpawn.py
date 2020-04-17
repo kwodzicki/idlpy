@@ -1,8 +1,11 @@
 import logging
 import os, re, time
 from datetime import datetime, timedelta
+from multiprocessing import cpu_count
 from threading import Thread
 from subprocess import Popen, PIPE
+
+NCPU = cpu_count()
 
 ###############################################################################
 class IDLJob( object ):
@@ -161,7 +164,7 @@ class IDLJob( object ):
 
 ##############################################################################
 class IDLAsyncQueue( object ):
-  def __init__(self, concurrency = CONFIG['NCPU']):
+  def __init__(self, concurrency = NCPU):
     self.concurrency = concurrency
     self._queue     = [];
     self._njobs     = 0
