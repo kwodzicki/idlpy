@@ -27,22 +27,23 @@ class IDLJob( object ):
   #############################################################################
   def start(self, nowait = False):
     """
-    Name:
-      start
-    Purpose:
-      Method that starts the IDL subprocess and the threads that pipe
-      stdout and stderr to a logger
-    Inputs:
+    Start the IDL subprocess and threads that pipe stdout and stderr to a logger
+
+    Arguments:
       None
-    Ouputs:
-      Returns True if IDL process was success, False otherwise
-    Keywords:
+
+    Keyword arguments:
       nowait : If set to True, will not wait for subprocess to finish. On
                 return gives value of failed; i.e., True if process failed,
                 False if ran. If set to True, returns None right away.
                 DEFAULT is to block until process finished and return the
                 value of failed attribute
+
+    Retunrs:
+      bool : True if IDL process was success, False otherwise
+
     """
+
     self.failed = True;                                                                 # Set failed to True, will be set to false by threads if completes
     my_env = os.environ.copy();                                                         # Copy user's environment
     if ('IDL_STARTUP' not in my_env):                                                   # If noe IDL_STARTUP set in environment
@@ -64,9 +65,9 @@ class IDLJob( object ):
     self._stderr.start();                                                               # Start thread to pipe stderr
 
     if nowait:                                                                          # If the nowait keyword is set
-        return None;                                                                    # Return None
+        return None                                                                    # Return None
     else:                                                                               # Else
-        return self.wait();                                                             # Return result of the wait() method; returns failed state
+        return self.wait()                                                             # Return result of the wait() method; returns failed state
 
   #############################################################################
   def wait(self):
@@ -79,33 +80,38 @@ class IDLJob( object ):
   #############################################################################
   def is_alive(self):
     """
-    Name
-      is_alive
-    Purpose:
-      check if subprocess is still running
-    Inputs:
+    Check if subprocess is still running
+
+    Arguments:
+      None
+
+    Keyword arguments:
       None.
-    Outputs:
-      True if running, false if done
+
+    Returns:
+      bool: True if running, false if done
+
     """
+
     return (self._proc.poll() is None);                                         # If poll() method returns None, then still running
 
   #############################################################################
   def _parseArgs(self, cmd, **kwargs):
     """"
-    Name:
-      _parseArgs
-    Purpose:
-      A method to parse IDL cmd string into arguments, setting arguments
-      using values from keywords.
-    Inputs:
+    Parse IDL cmd string into arguments setting arguments using values from keywords.
+
+    Arguments:
       cmd   : IDL command to run as string with all arugments
-    Outputs:
-      None
-    Keywords:
+
+    Keyword arguments:
       All variables required by IDL command.
       THESE ARE CASE-SENSITIVE AND MUST MATCH cmd EXACTLY!!!!
+
+    Returns:
+      None
+
     """
+
     if isinstance( cmd, (list,tuple,) ): cmd = ', '.join(cmd);                          # If the command input is a list or tuple, join on comma into one long string
     args = re.findall( r'\((.*)\)', cmd );                                              # Try to get arguments from IDL function command; i.e, all text between ( )
     if len(args) == 1:                                                                  # If text was found between parenthases
@@ -142,19 +148,20 @@ class IDLJob( object ):
   #############################################################################
   def _logSTD( self, level, pipe ):
     """
-    Name:
-      _logSTD
-    Purpose:
-      A method to read text from a pipe and send it to a logger
-      at a given log level
-    Inputs:
+    Method to read text from a pipe and send it to a logger at a given log level
+
+    Arguments:
       level  : The level to log at
       pipe   : Pipe to read from
-    Outputs:
-      None.
-    Keywords:
-      None.
+
+    Keyword arguments:
+      None
+
+    Returns:
+      None
+
     """
+
     line = pipe.readline();                                                     # Read a line from the pipe
     while line != '':                                                           # While the line is not empty
       self.log.log( level, line.rstrip() );                                     # As the line to the logger; strip off all return characters
@@ -175,15 +182,19 @@ class IDLAsyncQueue( object ):
   #############################################################################
   def submitJob(self, job):
     """
-    Name:
-      submitJob
-    Purpose:
-      Method to submit a spawnIDL object to the queue
-    Inputs:
-      job   : A spawnIDL object
-    Outputs:
+    Submit an IDLJob object to the queue to be run at a later time
+
+    Arguments:
+      job (IDLJob)  : An IDLJob instance to be run at later time
+
+    Keyword arguments:
       None.
+
+    Returns:
+      None
+
     """
+
     if isinstance( job, IDLJob ):
       self._njobs += 1;
       self._queue.append( job );
@@ -191,25 +202,28 @@ class IDLAsyncQueue( object ):
   #############################################################################
   def startJobs(self, nowait = False):
     """
-    Name:
-      startJobs
-    Purpose:
-      A method to start running jobs in the queue
-    Inputs:
-      None.
-    Outputs:
+    Start processing/running jobs in the queue
+
+    Arguments:
+      None
+
+    Keyword arguments:
+      nowait (bool) : If set, method will start thread to manage jobs and return
+        immediately. Should only be used in special cause, but
+        is intended to allow user to keep submitting jobs to queue. 
+
+    Returns:
       Typically returns a tuple where first element is number of jobs
       that completed successfully and seoncd element is total number of
       jobs run. However, if the nowait keyword is set, will return None.
-    Keywords:
-      nowait  : If set, method will start thread to manage jobs and return
-                 immediately. Should only be used in special cause, but
-                 is intended to allow user to keep submitting jobs
-                 to queue. 
-                 NOTE: It is possible that the job queue could 
-                 empty before one submits a new job, which means the new
-                 job wont start until this method is called again
+
+    Note:
+      It is possible that the job queue could empty before one submits a
+      new job, which means the new job wont start until this method is called
+      again
+
     """
+
     self._thread = Thread(target = self._run);                                  # Initialize thread to run the _run method
     self._thread.start();                                                       # Start the thread
     if nowait:                                                                  # If nowait is set
@@ -220,21 +234,24 @@ class IDLAsyncQueue( object ):
   #############################################################################
   def join(self):
     """
-    Name:
-      join
-    Purpose:
-      A method to wait for all jobs in the queue to finish
-    Inputs:
-      None.
-    Outputs:
-      Returns tuple where first element is number of jobs that ran
-      successfully and second element is total number of jobs run.
-      In a perfect world, these two numbers would always equal eachother.
-      NOTE: If the startJobs method was never called, then this method will
-            return (None, None,)
-    Keywords:
-      None.
+    Wait for all jobs in the queue to finish
+
+    Arguments:
+      None
+
+    Keyword arguments:
+      None
+
+    Returns:
+      tuple: first element is number of jobs that ran
+        successfully and second element is total number of jobs run.
+        In a perfect world, these two numbers would always equal eachother.
+
+    Note:
+      If the startJobs method was never called, then this method will return (None, None,)
+
     """
+
     if (self._thread is not None):                                              # If the _thread attribute is not None
       self._thread.join();                                                      # Join the thread, i.e., wait for it to finish
       nsuccess, ntot = sum( self._jobpass ), self._njobs;                       # Number of successful (i.e., NOT failed) and # total jobs
@@ -244,15 +261,16 @@ class IDLAsyncQueue( object ):
   #############################################################################
   def _run(self):
     """
-    Name:
-      _run
-    Purpose:
-      method to actually run/manage all the process in the queue
-    Inputs:
-      None.
-    Outputs:
-      None.
+    Actually run/manage all the process in the queue
+
+    Arguments:
+      None
+
+    Returns:
+      None
+
     """
+
     while len(self._queue) > 0:                                                     # While there are jobs in the queue
       self._manage();                                                               # Block until process finishes if too many running 
       job = self._queue.pop(0);                                                     # Pop job object off of queue
@@ -263,21 +281,25 @@ class IDLAsyncQueue( object ):
   #############################################################################
   def _manage(self, waitall = False, update = 0.1):
     """
-    Name:
-      _manage
-    Purpose:
-      A method intended to block until a process opens up. This means
-      if concurrency is set to 4 and 4 processes are running, we continually
-      check until a process finishes. When one finishes, the method returns
-    Inputs:
-      None.
-    Outputs:
-      None.
-    Keywords:
-      waitall  : If set, block until all running jobs finish
-      update   : Sleep interval (in seconds) between checks for jobs
-                  finished
+    Manage the concurrent processes
+
+    A method intended to block until a process opens up. This means
+    if concurrency is set to 4 and 4 processes are running, we continually
+    check until a process finishes. When one finishes, the method returns
+
+    Arguments:
+      None
+
+    Keyword arguments:
+      waitall (bool)  : If set, block until all running jobs finish
+      update  (float) : Sleep interval (in seconds) between checks for jobs
+        finished
+
+    Returns:
+      None
+
    """
+
     njobs = 1 if waitall else self.concurrency;                                     # Set njobs to one (1) if waitall is set, else use concurrency
     while len(self._jobs) > (njobs-1):                                              # While number of jobs is greater than one less the allowed number of jobs
       for i in range( len(self._jobs) ):                                            # Iterate over all job objects

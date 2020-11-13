@@ -1,35 +1,35 @@
 import numpy as np
 
 def numpy2idl( state ):
-  '''
-  Function to convert numpy random state tuple to
-  IDL format
-  '''
+  """Convert numpy random state tuple to IDL format"""
+
   seed      = np.pad( state[1], (2, 2) )
   seed[ 1]  = state[2]
   seed[-2:] = state[3:]
   return seed
 
 def idl2numpy( seed ):
-  '''
-  Function to convert IDL seed format to numpy ranomd state
-  tuple
-  '''
+  """Convert IDL seed format to numpy ranomd state tuple"""
+
   return ('MT19937', seed[2:-2], seed[1], seed[-2], seed[-1])
 
 def randomu( seed, *args, binomial = None, poisson = None):
-  '''
-  Purpose:
-    Function to act similar to IDL RANDOMU
-  Inputs:
+  """
+  Create random numbers in similar fasion to IDL RANDOMU()
+
+  Arguments:
     seed  :
     *args : list of dimensions
-  Keywords:
+
+  Keyword argumentss:
     binomial :
     poisson  :
+
   Returns:
     Tuple; (random values,  seed )
-  '''
+
+  """
+
   if len(args) == 1: args = args[0]																						# If single value input, de-tuple
 
   if isinstance(seed, (tuple, list, np.ndarray)) and len(seed) == 628:			  # If seed is iterable and has len is 628 then

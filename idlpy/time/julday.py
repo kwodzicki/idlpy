@@ -1,13 +1,11 @@
 import numpy
 from datetime import datetime
-'''
- NAME:
-	JULDAY
 
- PURPOSE:
-	Calculate the Julian Day Number for a given month, day, and year.
-	This is the inverse of the library function CALDAT.
-	See also caldat, the inverse of this function.
+"""
+Calculate the Julian Day Number for a given month, day, and year.
+
+This is the inverse of the library function CALDAT.
+See also caldat, the inverse of this function.
 
  CATEGORY:
 	Misc.
@@ -67,7 +65,9 @@ from datetime import datetime
  CT, April 2000, Now accepts vectors or scalars.
  CT, June 2012: Add undocumented PROLEPTIC_GREGORIAN, used by GREG2JUL.
      Also rewrote the algorithm using integer arithmetic, for speed.
-'''
+
+"""
+
 GREG         = 2299171  # incorrect Julian day for Oct. 25, 1582
 MIN_CALENDAR =   -4801
 MAX_CALENDAR = 5000000
@@ -83,6 +83,14 @@ def julday( *args, proleptic_gregorian=False):
     hour   = [date.hour]
     minute = [date.minute]
     second = [date.second + date.microsecond/1.0e6]
+  elif np == 1 and isinstance(args[0], datetime):
+    np     = 6
+    year   = [args[0].year]
+    month  = [args[0].month]
+    day    = [args[0].day] 
+    hour   = [args[0].hour]
+    minute = [args[0].minute]
+    second = [args[0].second + args[0].microsecond/1.0e6]
   elif np < 3:
     raise Exception('Incorrect number of inputs') 
   else:
@@ -104,7 +112,7 @@ def julday( *args, proleptic_gregorian=False):
   day    = numpy.asarray(day,    dtype=numpy.int32)
   hour   = numpy.asarray(hour,   dtype=numpy.int32) 
   minute = numpy.asarray(minute, dtype=numpy.int32)
-  second = numpy.asarray(second)
+  second = numpy.asarray(second, dtype=numpy.float32)
 
   # Gregorian Calander was adopted on Oct. 15, 1582
   # skipping from Oct. 4, 1582 to Oct. 15, 1582
@@ -207,3 +215,15 @@ def julday( *args, proleptic_gregorian=False):
   if julianDims:
     JUL = JUL.reshape(julianDims)
   return JUL
+
+def julday_no_leap(month, day, year):
+  ileapday = numpy.where( (month == 2) & (data == 29) )
+  if ileapday[0].size > 0: raise Exception('February 29 not permitted in julday_no_leap')
+
+  if numpy.sum(month < 1) > 0 or numpy.sum(month > 12) > 0:
+    raise Exception( 'Month out of rnage in julday_no_leap' )
+  if numpy.sum(day   < 1) > 0 or numpy.sum(day   > 31) > 0:
+    raise Exception( 'Day out of range in julday_no_leap')
+
+  return julday(month, day, 2001) + 365*(year - 2001)
+

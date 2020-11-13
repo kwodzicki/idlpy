@@ -4,12 +4,21 @@ import os, re
 ###############################################################################
 def file_search( indir, pattern = None, match_all_initial_dot = False):
   """
-  Name:
-      file_search
-  Purpose:
-      Function that acts like the IDL FILE_SEARCH() function
-  Inputs:
+  Function that acts like the IDL FILE_SEARCH() function
+
+  Arguments:
+    indir (str) : Path to search
+
+  Keyword arguments:
+    pattern (str) : Pattern to use for matching
+
+  Returns:
+    tuple : List of files matching patterns, number of matches
+
+  Note:
+    See IDL documention for FILE_SEARCH() function for more information on use.
   """
+
   out   = []
   if (pattern is None):
     for f in os.listdir(indir):
