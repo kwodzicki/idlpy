@@ -67,27 +67,25 @@ MAX_JULIAN = 1827933925
 
 def caldat(julian, prolepticGregorian = False):
 
-  minn = min(julian)
-  maxx = max(julian)
+  minn = np.min(julian)
+  maxx = np.max(julian)
 
   if (minn < MIN_JULIAN) or (maxx > MAX_JULIAN):
      raise Exception('Value of Julian date is out of allowed range.')
 
   igreg   = 2299161    #Beginning of Gregorian calendar
-  isFloat = isinstance(julian, float)
-  if isinstance(julian, np.ndarray):
-    isFloat = isFloat or (julian.dtype == np.float) 
-    isFloat = isFloat or (julian.dtype == np.float32)
-    isFloat = isFloat or (julian.dtype == np.float64)
-  if isFloat: 
+  if not isinstance(julian, np.ndarray):
+    julian = np.asarray( julian )
+    
+  if julian.dtype in (np.float, np.float32, np.float64,):
     julLong = np.floor(julian + 0.5).astype( np.int32 ) 
   else:
      julLong = julian
-  minJul = min(julLong)
+  minJul = np.min(julLong)
   
   jShift = julLong + 32082  # shift back to 4800 BC
  
-  if minJul >= igreg or prolepticgregorian:
+  if minJul >= igreg or prolepticGregorian:
     jShift -= 38
     g400    = jShift // 146097
     deltaG  = jShift % 146097
@@ -96,7 +94,7 @@ def caldat(julian, prolepticGregorian = False):
     year    = g400*400 + c100*100
 
   else:
-    n      = len(jShift)
+    n      = jShift.size
     deltaC = jShift
     year   = np.zeros(n, dtype=np.int32) if n > 1 else 0
 

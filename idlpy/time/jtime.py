@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from .. import Structure
-
-class JTime( Structure ):
+class JTime( object ):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.jday    = 0
