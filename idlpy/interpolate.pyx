@@ -7,11 +7,26 @@ cimport numpy as np
 cimport cython
 
 cdef int checkBound( long id, long n ) nogil:
-  if id < 0:
-    return 0
-  elif id >= n:
-    return n-1
-  return id
+  """
+  Checks that given index is within bounds of axis of length n
+
+  Arguments:
+    id (long) : Index into array dimension
+    n (long) : Length of array dimensions
+
+  Keyword arguments:
+    None.
+
+  Returns:
+    long : Index adjusted to be within bounds
+
+  """
+
+  if id < 0:                                                                            # If index less than zero
+    return 0                                                                            # Return zero
+  elif id >= n:                                                                         # Else if greater or equal length of dimension
+    return n-1                                                                          # Return n-1; maximum index for given dimension
+  return id                                                                             # Just return index
 
 cdef float checkIndex( float id, long n0, long n1 ) nogil:
   if id >= n1 or id < n0:
@@ -22,6 +37,21 @@ cdef float checkIndex( float id, long n0, long n1 ) nogil:
 @cython.wraparound(False)
 @cython.cdivision(True)
 def interp1d( double [:] data, float [:] xid ):
+  """
+  Perform linear interpolation on data
+
+  Arguments:
+    data (double) : 1D data array to interpolate
+    xid (float)   : Indices to interpolate to
+
+  Keyword arguments:
+    None.
+
+  Returns:
+    Interpolated data
+
+  """
+
   out = np.empty( (xid.size,), dtype=np.float64 )
   cdef:
     Py_ssize_t i, x0, x1
@@ -45,6 +75,21 @@ def interp1d( double [:] data, float [:] xid ):
 @cython.wraparound(False)
 @cython.cdivision(True)
 def interp2d( double [:,::1] data, float [:] yid, float [:] xid ):
+  """
+  Perform bi-linear interpolation on data
+
+  Arguments:
+    data (double) : 2D data array to interpolate
+    yid (float)   : Indices to interpolate in second dimension
+    xid (float)   : Indices to interpolate in first dimension
+
+  Keyword arguments:
+    None.
+
+  Returns:
+    Interpolated data
+
+  """
   out = np.empty( (yid.size, xid.size,), dtype=np.float64 )
 
   cdef:
@@ -82,6 +127,23 @@ def interp2d( double [:,::1] data, float [:] yid, float [:] xid ):
 @cython.wraparound(False)
 @cython.cdivision(True)
 def interp3d( double [:,:,::1] data, float [:] zid, float [:] yid, float [:] xid ):
+  """
+  Perform tri-linear interpolation on data
+
+  Arguments:
+    data (double) : 2D data array to interpolate
+    zid (float)   : Indices to interpolate in third dimension
+    yid (float)   : Indices to interpolate in second dimension
+    xid (float)   : Indices to interpolate in first dimension
+
+  Keyword arguments:
+    None.
+
+  Returns:
+    Interpolated data
+
+  """
+
   out = np.full( (zid.size, yid.size, xid.size,), np.nan, dtype=np.float64 )
   cdef:
     Py_ssize_t i, j, k, x0, x1, y0, y1, z0, z1
@@ -130,12 +192,37 @@ def interp3d( double [:,:,::1] data, float [:] zid, float [:] yid, float [:] xid
   return out
 
 def interpolate( data, *args, **kwargs ):
-  inType = data.dtype
-  if data.dtype != np.float64:
-    data = data.astype( np.float64 )
-  nargs = len(args)
-  if nargs > 3:
-    raise Exception( 'Can only perform up to trilinear interpolation' )
+  """
+  Interpolate 1D-3D data similar to IDL INTERPOLATE() function
+
+  This function acts just like the IDL INTERPOLATE() function when the
+  /GRID keyword is set. Input arguments are more strict in that if a
+  2D array is input, interpolation indices for both diemensions must be
+  input.
+
+  Arguments:
+    data (numpy.ndarray) : The array of data values to interpolate. 
+      Can be 1D, 2D, or 3D.
+    *args (numpy.ndarray) : Indices to interpolat to.
+      For 1D data, only one (1) array of indices is input.
+      For 2D data, two (2) arraus of indices are input.
+      For 3D data, three (3) arrays of indices are input.
+      The order of array input matches the ordering of the data array; i.e, (z, y, x)
+
+  Keyword arguments:
+    missing : The value to return for elements outside the bounds of data.
+
+  Return:
+    numpy.ndarray : Interpolated data
+ 
+  """
+
+  inType = data.dtype                                                                   # Get input data type
+  if data.dtype != np.float64:                                                          # If not 64-bit float
+    data = data.astype( np.float64 )                                                    # Convert to 64-bit float
+  nargs = len(args)                                                                     # Get number of arguments
+  if nargs > 3:                                                                         # If more than 3 arguments
+    raise Exception( 'Can only perform up to trilinear interpolation' )                 # Exception
 
   args  = list( args )                                                                  # Convert args tuple to list
   for i in range( nargs ):                                                              # Iterate over all values
@@ -146,6 +233,7 @@ def interpolate( data, *args, **kwargs ):
     elif args[i].dtype != np.float32:                                                   # Else, if not a 32-bit float
       args[i] = args[i].astype( np.float32 )                                            # Cast to 32-bit float
 
+  # Run linear, bi-linear, or tri-linear interpolation based on number of inputs
   if nargs == 1:
     out = interp1d( data, *args ).astype( inType )
   elif nargs == 2:
