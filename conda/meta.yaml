@@ -1,0 +1,15 @@
+package:
+        name: idlpy
+        version: 0.2.2
+source:
+        git_url: https://github.com/kwodzicki/idlpy.git
+        git_rev:
+requirements:
+        build:
+                - python
+                - setuptools
+                - Cython
+                - numpy
+        run:
+                - python
+

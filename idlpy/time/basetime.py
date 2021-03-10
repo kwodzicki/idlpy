@@ -24,7 +24,7 @@ class Basetime():
     if self.caltype == 'JTIME':
       date    = caldat(self.args[0,:])
       no_leap = False
-    elif self.caltype = 'JTIME_NO_LEAP':
+    elif self.caltype == 'JTIME_NO_LEAP':
       date    = caldat_no_leap(self.args[0,:])
       no_leap = True
 
