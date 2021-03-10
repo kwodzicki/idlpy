@@ -1,6 +1,5 @@
 .DS_Store
 .afp*
-*.sh
 __pycache__
 *.swp
 *.pyc

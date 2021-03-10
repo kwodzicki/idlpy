@@ -1,9 +1,10 @@
 package:
         name: idlpy
-        version: 0.2.2
+        version: 0.2.3
 source:
-        git_url: https://github.com/kwodzicki/idlpy.git
-        git_rev:
+        path: ../
+        #git_url: https://github.com/kwodzicki/idlpy.git
+        #git_rev:
 requirements:
         build:
                 - python
