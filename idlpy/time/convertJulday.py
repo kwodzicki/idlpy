@@ -21,7 +21,7 @@ def julday2datetime( julday, seconds ):
 
   """
 
-  return caldat( julday ) + timedelta( seconds = seconds )
+  return caldat( julday + seconds / 86400.0 )
 
 
 def datetime2julday( date ):
