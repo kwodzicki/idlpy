@@ -16,8 +16,14 @@ class RNG( Generator ):
   def set_state(self, state):
     """Update state information, accepts numpy or IDL format"""
     if state is not None:
-      if isinstance(state, (tuple, list, ndarray)) and len(state) == 628:	# If seed is iterable and has len is 628 then
-        state = self._idl2numpy( state )					# Convert seed to numpy state
+      if isinstance(state, (tuple, list, ndarray)):
+        if len(state) == 628:	# If seed is iterable and has len is 628 then
+          state = self._idl2numpy( state )					# Convert seed to numpy state
+        else:
+          state = MT19937( state[0] ).state                                     #Convert seed to numpy state
+      else:
+        state = MT19937( state ).state
+
       self.bit_generator.state = state                                          # Update the state
 
   def _idl2numpy( self, seed ):
@@ -55,7 +61,10 @@ def randomu( seed, *args, binomial = None, poisson = None, double=False):
   _RNG.set_state( seed )
   dtype = float64 if double else float32 
 
-  if len(args) == 1: args = args[0]																						# If single value input, de-tuple
+  if len(args) == 0:
+    args = 1
+  elif len(args) == 1: 
+    args = args[0]						# If single value input, de-tuple
     
   if binomial is not None:
     if len(binomial) != 2:
